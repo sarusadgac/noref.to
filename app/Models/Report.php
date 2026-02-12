@@ -2,58 +2,48 @@
 
 namespace App\Models;
 
+use App\Enums\ReportStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Report extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'reportable_type',
-        'reportable_id',
-        'category',
-        'url',
+        'link_id',
         'email',
         'comment',
-        'ip_address',
-        'user_id',
         'status',
-        'admin_notes',
-        'dealt_by',
-        'dealt_at',
+        'resolved_by',
+        'resolved_at',
     ];
 
+    /**
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [
-            'dealt_at' => 'datetime',
+            'status' => ReportStatus::class,
+            'resolved_at' => 'datetime',
         ];
     }
 
-    /**
-     * Get the reportable model (Link or Note).
-     */
-    public function reportable(): MorphTo
+    public function link(): BelongsTo
     {
-        return $this->morphTo();
+        return $this->belongsTo(Link::class);
     }
 
-    /**
-     * Get the user who submitted the report.
-     */
-    public function user(): BelongsTo
+    public function resolver(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'resolved_by');
     }
 
-    /**
-     * Get the admin who dealt with the report.
-     */
-    public function dealtBy(): BelongsTo
+    public function scopePending(Builder $query): Builder
     {
-        return $this->belongsTo(User::class, 'dealt_by');
+        return $query->where('status', ReportStatus::Pending);
     }
 }

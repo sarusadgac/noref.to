@@ -1,155 +1,143 @@
 <?php
 
-declare(strict_types=1);
-
-use App\Actions\Links\CreateLink;
+use App\Models\Domain;
 use App\Models\Link;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
+use Livewire\Livewire;
 
-uses(RefreshDatabase::class);
-
-describe('Anonymous Link Creation', function () {
-    test('anonymous user can create link', function () {
-        $action = app(CreateLink::class);
-
-        $link = $action->execute([
-            'url' => 'https://example.com/page',
-            'user_id' => null,
-        ]);
-
-        expect($link)->toBeInstanceOf(Link::class)
-            ->full_url->toBe('https://example.com/page')
-            ->hash->toHaveLength(6)
-            ->user_id->toBeNull()
-            ->is_active->toBeTrue();
-
-        $this->assertDatabaseHas('links', [
-            'full_url' => 'https://example.com/page',
-            'is_active' => true,
-        ]);
-    });
-
-    test('creates link with complex URL', function () {
-        $action = app(CreateLink::class);
-
-        $complexUrl = 'https://example.com:8080/path/to/page?query=value&another=param#section';
-
-        $link = $action->execute([
-            'url' => $complexUrl,
-            'user_id' => null,
-        ]);
-
-        expect($link->url_scheme)->toBe('https')
-            ->and($link->url_host)->toBe('example.com')
-            ->and($link->url_port)->toBe(8080)
-            ->and($link->url_path)->toBe('/path/to/page')
-            ->and($link->url_query)->toBe('query=value&another=param')
-            ->and($link->url_fragment)->toBe('section')
-            ->and($link->full_url)->toBe($complexUrl);
-    });
-
-    test('link is automatically cached after creation', function () {
-        $action = app(CreateLink::class);
-
-        $link = $action->execute([
-            'url' => 'https://example.com/cached-link',
-            'user_id' => null,
-        ]);
-
-        $cached = Cache::get("link:{$link->hash}");
-
-        expect($cached)->not->toBeNull()
-            ->id->toBe($link->id)
-            ->full_url->toBe('https://example.com/cached-link');
-    });
+beforeEach(function () {
+    User::factory()->system()->create();
 });
 
-describe('Registered User Link Creation', function () {
-    test('registered user can create link', function () {
-        $user = User::factory()->create();
-        $action = app(CreateLink::class);
+test('authenticated user can shorten a valid URL', function () {
+    $user = User::factory()->create();
 
-        $link = $action->execute([
-            'url' => 'https://example.com/user-page',
-            'user_id' => $user->id,
-        ]);
+    Livewire::actingAs($user)
+        ->test('pages::home')
+        ->set('url', 'https://example.com/some-page')
+        ->set('captchaToken', 'test-token')
+        ->call('shorten')
+        ->assertHasNoErrors()
+        ->assertSet('shortUrl', fn ($value) => str_contains($value, '/'));
 
-        expect($link->user_id)->toBe($user->id)
-            ->and($link->full_url)->toBe('https://example.com/user-page');
-
-        $this->assertDatabaseHas('links', [
-            'user_id' => $user->id,
-            'full_url' => 'https://example.com/user-page',
-        ]);
-    });
+    expect(Link::count())->toBe(1);
+    expect(Link::first()->created_by)->toBe($user->id);
 });
 
-describe('Duplicate Detection', function () {
-    test('returns existing link for duplicate URL', function () {
-        $action = app(CreateLink::class);
-        $url = 'https://example.com/duplicate-test';
+test('guest user can shorten a valid URL', function () {
+    Livewire::test('pages::home')
+        ->set('url', 'https://example.com/some-page')
+        ->set('captchaToken', 'test-token')
+        ->call('shorten')
+        ->assertHasNoErrors()
+        ->assertSet('shortUrl', fn ($value) => str_contains($value, '/'));
 
-        // Create first link
-        $firstLink = $action->execute([
-            'url' => $url,
-            'user_id' => null,
-        ]);
+    $link = Link::first();
+    $systemUser = User::where('email', config('anonto.system_user_email'))->first();
 
-        // Attempt to create duplicate
-        $secondLink = $action->execute([
-            'url' => $url,
-            'user_id' => null,
-        ]);
-
-        expect($secondLink->id)->toBe($firstLink->id)
-            ->and(Link::count())->toBe(1);
-    });
-
-    test('creates new link for different URL', function () {
-        $action = app(CreateLink::class);
-
-        $firstLink = $action->execute([
-            'url' => 'https://example.com/page1',
-            'user_id' => null,
-        ]);
-
-        $secondLink = $action->execute([
-            'url' => 'https://example.com/page2',
-            'user_id' => null,
-        ]);
-
-        expect($secondLink->id)->not->toBe($firstLink->id)
-            ->and(Link::count())->toBe(2);
-    });
+    expect($link->created_by)->toBe($systemUser->id);
 });
 
-describe('Validation', function () {
-    test('rejects invalid URL', function () {
-        $action = app(CreateLink::class);
+test('shortening rejects invalid URLs', function () {
+    Livewire::test('pages::home')
+        ->set('url', 'not-a-url')
+        ->call('shorten')
+        ->assertHasErrors(['url']);
+});
 
-        $action->execute([
-            'url' => 'not-a-valid-url',
-            'user_id' => null,
-        ]);
-    })->throws(\InvalidArgumentException::class);
+test('shortening rejects self-referencing URLs', function () {
+    Livewire::test('pages::home')
+        ->set('url', config('app.url').'/some-path')
+        ->set('captchaToken', 'test-token')
+        ->call('shorten')
+        ->assertHasErrors(['url']);
+});
 
-    test('rejects internal IP addresses', function () {
-        $action = app(CreateLink::class);
+test('duplicate URLs return same link', function () {
+    $user = User::factory()->create();
 
-        $action->execute([
-            'url' => 'http://192.168.1.1/admin',
-            'user_id' => null,
-        ]);
-    })->throws(\InvalidArgumentException::class, 'Internal or private IP addresses are not allowed');
+    Livewire::actingAs($user)
+        ->test('pages::home')
+        ->set('url', 'https://example.com/test')
+        ->set('captchaToken', 'test-token')
+        ->call('shorten');
 
-    test('rejects FTP URLs', function () {
-        $action = app(CreateLink::class);
+    Livewire::actingAs($user)
+        ->test('pages::home')
+        ->set('url', 'https://example.com/test')
+        ->set('captchaToken', 'test-token')
+        ->call('shorten');
 
-        $action->execute([
-            'url' => 'ftp://example.com/file.txt',
-            'user_id' => null,
-        ]);
-    })->throws(\InvalidArgumentException::class, 'Only HTTP and HTTPS URLs are allowed');
+    expect(Link::count())->toBe(1);
+});
+
+test('generated hash is 6 characters alphanumeric', function () {
+    $hash = Link::generateUniqueHash();
+
+    expect($hash)->toMatch('/^[A-Za-z0-9]{6}$/');
+});
+
+test('generated hash does not match excluded words', function () {
+    $excludedWords = array_map('strtolower', config('anonto.excluded_words', []));
+
+    for ($i = 0; $i < 50; $i++) {
+        $hash = Link::generateUniqueHash();
+        expect(in_array(strtolower($hash), $excludedWords, true))->toBeFalse();
+    }
+});
+
+test('shortening a URL with a blocked domain returns validation error', function () {
+    Domain::factory()->blocked()->create(['host' => 'evil.com']);
+
+    Livewire::test('pages::home')
+        ->set('url', 'https://evil.com/some-page')
+        ->set('captchaToken', 'test-token')
+        ->call('shorten')
+        ->assertHasErrors(['url']);
+
+    expect(Link::count())->toBe(0);
+});
+
+test('shortening a URL with an allowed domain works normally', function () {
+    Domain::factory()->allowed()->create(['host' => 'trusted.com']);
+
+    Livewire::test('pages::home')
+        ->set('url', 'https://trusted.com/some-page')
+        ->set('captchaToken', 'test-token')
+        ->call('shorten')
+        ->assertHasNoErrors()
+        ->assertSet('shortUrl', fn ($value) => str_contains($value, '/'));
+
+    expect(Link::count())->toBe(1);
+});
+
+test('shortening a URL with an unknown domain works normally', function () {
+    Livewire::test('pages::home')
+        ->set('url', 'https://unknown-domain.com/some-page')
+        ->set('captchaToken', 'test-token')
+        ->call('shorten')
+        ->assertHasNoErrors()
+        ->assertSet('shortUrl', fn ($value) => str_contains($value, '/'));
+
+    expect(Link::count())->toBe(1);
+});
+
+test('shortening is rate limited', function () {
+    $user = User::factory()->create();
+
+    for ($i = 0; $i < 20; $i++) {
+        Livewire::actingAs($user)
+            ->test('pages::home')
+            ->set('url', "https://example.com/page-{$i}")
+            ->set('captchaToken', 'test-token')
+            ->call('shorten')
+            ->assertHasNoErrors();
+    }
+
+    Livewire::actingAs($user)
+        ->test('pages::home')
+        ->set('url', 'https://example.com/page-extra')
+        ->set('captchaToken', 'test-token')
+        ->call('shorten')
+        ->assertHasErrors(['url']);
 });

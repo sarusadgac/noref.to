@@ -1,5 +1,5 @@
 {
-    "$schema": "https://json.schemastore.org/package.json",
+    "$schema": "https://www.schemastore.org/package.json",
     "private": true,
     "type": "module",
     "scripts": {
@@ -7,17 +7,17 @@
         "dev": "vite"
     },
     "dependencies": {
-        "@tailwindcss/vite": "^4.1",
-        "autoprefixer": "^10.4",
-        "axios": "^1.13",
-        "concurrently": "^9.2",
-        "laravel-vite-plugin": "^2.0",
-        "tailwindcss": "^4.1",
-        "vite": "^7.2"
+        "@tailwindcss/vite": "^4.1.18",
+        "autoprefixer": "^10.4.24",
+        "axios": "^1.13.5",
+        "concurrently": "^9.2.1",
+        "laravel-vite-plugin": "^2.1.0",
+        "tailwindcss": "^4.1.18",
+        "vite": "^7.3.1"
     },
     "optionalDependencies": {
-        "@rollup/rollup-linux-x64-gnu": "4.9",
-        "@tailwindcss/oxide-linux-x64-gnu": "^4.0",
-        "lightningcss-linux-x64-gnu": "^1.29"
+        "@rollup/rollup-linux-x64-gnu": "4.9.5",
+        "@tailwindcss/oxide-linux-x64-gnu": "^4.1.18",
+        "lightningcss-linux-x64-gnu": "^1.31.1"
     }
 }

@@ -2,10 +2,14 @@
 
 namespace App\Providers;
 
-use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\RateLimiter;
+use App\Models\User;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,53 +26,48 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->configureRateLimiting();
-        $this->registerObservers();
+        $this->configureDefaults();
+        $this->configureBladeDirectives();
+        $this->configureGates();
     }
 
     /**
-     * Register model observers.
+     * Configure default behaviors for production-ready applications.
      */
-    protected function registerObservers(): void
+    protected function configureDefaults(): void
     {
-        \App\Models\Link::observe(\App\Observers\LinkObserver::class);
-        \App\Models\Note::observe(\App\Observers\NoteObserver::class);
+        Date::use(CarbonImmutable::class);
+
+        DB::prohibitDestructiveCommands(
+            app()->isProduction(),
+        );
+
+        Password::defaults(fn (): ?Password => app()->isProduction()
+            ? Password::min(12)
+                ->mixedCase()
+                ->letters()
+                ->numbers()
+                ->symbols()
+                ->uncompromised()
+            : null
+        );
     }
 
     /**
-     * Configure rate limiting for the application.
+     * Configure custom Blade directives.
      */
-    protected function configureRateLimiting(): void
+    protected function configureBladeDirectives(): void
     {
-        // Rate limiting for link creation (tiered by user type)
-        RateLimiter::for('create-link', function (Request $request) {
-            // Check if user is authenticated
-            if ($request->user()) {
-                // Registered users: 100 links per hour
-                return Limit::perHour(100)
-                    ->by($request->user()->id)
-                    ->response(function (Request $request, array $headers) {
-                        return response()->json([
-                            'message' => 'Too many link creations. Please try again later.',
-                            'retry_after' => $headers['Retry-After'] ?? 3600,
-                        ], 429, $headers);
-                    });
-            }
+        Blade::if('admin', fn () => auth()->check() && auth()->user()->isAdmin());
+    }
 
-            // Anonymous users: 20 links per hour (IP-based)
-            return Limit::perHour(20)
-                ->by($request->ip())
-                ->response(function (Request $request, array $headers) {
-                    return response()->json([
-                        'message' => 'Too many link creations. Please try again in an hour or create an account for higher limits.',
-                        'retry_after' => $headers['Retry-After'] ?? 3600,
-                    ], 429, $headers);
-                });
-        });
-
-        // Standard API rate limiting (used by other endpoints)
-        RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+    /**
+     * Configure authorization gates.
+     */
+    protected function configureGates(): void
+    {
+        Gate::define('viewPulse', function (User $user): bool {
+            return $user->isAdmin();
         });
     }
 }

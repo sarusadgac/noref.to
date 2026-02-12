@@ -2,9 +2,8 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -23,15 +22,8 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'username',
         'email',
         'password',
-        'is_admin',
-        'is_verified',
-        'api_rate_limit',
-        'last_login_at',
-        'banned_at',
-        'banned_by',
     ];
 
     /**
@@ -56,12 +48,18 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_admin' => 'boolean',
-            'is_verified' => 'boolean',
-            'api_rate_limit' => 'integer',
-            'last_login_at' => 'datetime',
-            'banned_at' => 'datetime',
+            'role' => UserRole::class,
         ];
+    }
+
+    public function links(): HasMany
+    {
+        return $this->hasMany(Link::class, 'created_by');
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === UserRole::Admin;
     }
 
     /**
@@ -74,45 +72,5 @@ class User extends Authenticatable
             ->take(2)
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
-    }
-
-    /**
-     * Get the user's links.
-     */
-    public function links(): HasMany
-    {
-        return $this->hasMany(Link::class);
-    }
-
-    /**
-     * Get the user's notes.
-     */
-    public function notes(): HasMany
-    {
-        return $this->hasMany(Note::class);
-    }
-
-    /**
-     * Get the user's reports.
-     */
-    public function reports(): HasMany
-    {
-        return $this->hasMany(Report::class);
-    }
-
-    /**
-     * Get the allow list rules added by this admin.
-     */
-    public function allowListRules(): HasMany
-    {
-        return $this->hasMany(AllowList::class, 'added_by');
-    }
-
-    /**
-     * Get the admin who banned this user.
-     */
-    public function bannedBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'banned_by');
     }
 }

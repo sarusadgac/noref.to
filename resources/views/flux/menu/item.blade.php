@@ -39,7 +39,7 @@ $classes = Flux::classes()
             '**:data-flux-menu-item-icon:text-zinc-400 dark:**:data-flux-menu-item-icon:text-white/60 [&[data-active]_[data-flux-menu-item-icon]]:text-current',
         ],
         'default' => [
-            'text-zinc-800 data-active:bg-zinc-50 dark:text-white dark:data-active:bg-zinc-600',
+            'text-zinc-800 data-active:bg-emerald-50 data-active:text-emerald-700 dark:text-white dark:data-active:bg-emerald-400/10 dark:data-active:text-emerald-300',
             '**:data-flux-menu-item-icon:text-zinc-400 dark:**:data-flux-menu-item-icon:text-white/60 [&[data-active]_[data-flux-menu-item-icon]]:text-current',
         ]
     })

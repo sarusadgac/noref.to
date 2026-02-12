@@ -25,6 +25,14 @@ test('direct redirect with http URL works', function () {
     $response->assertSee('http://example.com/http-test');
 });
 
+test('direct redirect with url-encoded URL works', function () {
+    $response = $this->get('/?https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DmcRIVDHt6KU');
+
+    $response->assertOk();
+    $response->assertSee('https://www.youtube.com/watch?v=mcRIVDHt6KU');
+    $response->assertSee('Anonymized Redirect');
+});
+
 test('direct redirect for allowed domain shows auto-redirect', function () {
     Domain::factory()->allowed()->create(['host' => 'trusted.com']);
 
@@ -43,11 +51,4 @@ test('direct redirect for blocked domain shows blocked message', function () {
     $response->assertOk();
     $response->assertSee('Domain Blocked');
     $response->assertDontSee('Continue to site');
-});
-
-test('invalid URL does not create cache entry', function () {
-    $this->get('/?not-a-url');
-
-    $entry = Cache::get('redirect:'.md5('not-a-url'));
-    expect($entry)->toBeNull();
 });

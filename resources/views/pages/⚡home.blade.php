@@ -153,7 +153,7 @@ new #[Layout('layouts.public')] #[Title('Anonymous URL Shortener and Redirect')]
             {{-- Live URL preview --}}
             <div class="rounded-lg bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-100 dark:border-zinc-800/60 px-4 py-3">
                 <p class="font-mono-accent text-sm leading-relaxed break-all">
-                    <span class="text-zinc-400 dark:text-zinc-600 select-all">{{ url('/') }}/?</span><span class="text-emerald-600 dark:text-emerald-400 transition-opacity duration-150" x-text="targetUrl || 'https://example.com'" :class="targetUrl ? 'opacity-100' : 'opacity-30'"></span>
+                    <span class="text-zinc-200 dark:text-zinc-400 select-all">{{ url('/') }}/?</span><span class="text-emerald-600 dark:text-emerald-400 transition-opacity duration-150" x-text="targetUrl || 'https://example.com'" :class="targetUrl ? 'opacity-100' : 'opacity-60'"></span>
                 </p>
             </div>
 

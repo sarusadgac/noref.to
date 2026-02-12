@@ -17,7 +17,7 @@ class HandleDirectRedirect
     public function handle(Request $request, Closure $next): Response
     {
         if ($request->is('/') && $request->isMethod('GET')) {
-            $queryString = $request->server('QUERY_STRING', '');
+            $queryString = rawurldecode($request->server('QUERY_STRING', ''));
 
             if ($queryString && filter_var($queryString, FILTER_VALIDATE_URL) && preg_match('#^https?://#i', $queryString)) {
                 $host = parse_url($queryString, PHP_URL_HOST);

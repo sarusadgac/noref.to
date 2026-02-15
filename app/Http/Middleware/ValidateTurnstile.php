@@ -30,7 +30,7 @@ class ValidateTurnstile
             return $next($request);
         }
 
-        $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->only('cf-turnstile-response'), [
             'cf-turnstile-response' => ['required', new Turnstile],
         ], [
             'cf-turnstile-response.required' => __('Security verification failed. Please refresh the page and try again.'),

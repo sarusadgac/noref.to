@@ -26,6 +26,13 @@ class Link extends Model
         'url_fingerprint',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'port' => 'integer',
+        ];
+    }
+
     public function report(): HasOne
     {
         return $this->hasOne(Report::class);
@@ -155,8 +162,15 @@ class Link extends Model
         }
 
         if (! $createdBy) {
-            $systemUser = User::where('email', config('anonto.system_user_email'))->firstOrFail();
-            $createdBy = $systemUser->id;
+            $createdBy = Cache::remember('system_user_id', 3600, function () {
+                $user = User::where('email', config('anonto.system_user_email'))->first();
+
+                if (! $user) {
+                    throw new \RuntimeException('System user not found. Run: php artisan db:seed --class=SystemUserSeeder');
+                }
+
+                return $user->id;
+            });
         }
 
         $maxAttempts = 5;
@@ -172,7 +186,13 @@ class Link extends Model
             } catch (\Illuminate\Database\QueryException $e) {
                 // Duplicate fingerprint — another request created the same URL concurrently
                 if (str_contains($e->getMessage(), 'url_fingerprint')) {
-                    return static::where('url_fingerprint', $fingerprint)->firstOrFail();
+                    $link = static::where('url_fingerprint', $fingerprint)->first();
+
+                    if (! $link) {
+                        throw new \RuntimeException('Concurrent link creation race condition: fingerprint constraint violated but record not found.');
+                    }
+
+                    return $link;
                 }
 
                 // Duplicate hash — retry with a new hash
@@ -196,6 +216,10 @@ class Link extends Model
 
         $cached = Cache::get($cacheKey);
 
+        if ($cached === false) {
+            return null;
+        }
+
         if ($cached !== null) {
             return $cached;
         }
@@ -207,6 +231,8 @@ class Link extends Model
 
             return $link->destination_url;
         }
+
+        Cache::put($cacheKey, false, 300);
 
         return null;
     }

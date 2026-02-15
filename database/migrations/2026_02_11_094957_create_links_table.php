@@ -26,6 +26,8 @@ return new class extends Migration
 
             $table->index('created_by');
             $table->index('host');
+            $table->index('created_at');
+            $table->index(['created_by', 'created_at']);
         });
     }
 

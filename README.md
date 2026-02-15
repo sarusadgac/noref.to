@@ -50,7 +50,15 @@ This runs `composer install`, copies `.env.example`, generates the app key, runs
 
 Configure `.env` with your database, Redis, and Cloudflare Turnstile credentials.
 
-### Creating an Admin
+### Seed the System User
+
+**Required** — the system user must exist before the app can work. Without it, shortening URLs as a guest will fail.
+
+```bash
+php artisan db:seed --class=SystemUserSeeder
+```
+
+### Create an Admin User
 
 ```bash
 php artisan app:create-admin

@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Enums\ReportStatus;
 use App\Models\Link;
 use App\Models\Report;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -27,5 +28,29 @@ class ReportFactory extends Factory
             'comment' => fake()->sentence(),
             'status' => ReportStatus::Pending,
         ];
+    }
+
+    /**
+     * Indicate that the report has been resolved.
+     */
+    public function resolved(?User $resolver = null): static
+    {
+        return $this->state(fn () => [
+            'status' => ReportStatus::Resolved,
+            'resolved_by' => $resolver?->id ?? User::factory()->admin(),
+            'resolved_at' => now(),
+        ]);
+    }
+
+    /**
+     * Indicate that the report has been dismissed.
+     */
+    public function dismissed(?User $resolver = null): static
+    {
+        return $this->state(fn () => [
+            'status' => ReportStatus::Dismissed,
+            'resolved_by' => $resolver?->id ?? User::factory()->admin(),
+            'resolved_at' => now(),
+        ]);
     }
 }

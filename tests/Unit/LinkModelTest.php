@@ -1,6 +1,11 @@
 <?php
 
 use App\Models\Link;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
+
+uses(Tests\TestCase::class, RefreshDatabase::class);
 
 test('decomposeUrl correctly parses a full URL', function () {
     $components = Link::decomposeUrl('https://example.com:8080/path/to/page?q=test#section');
@@ -92,4 +97,26 @@ test('destination_url accessor handles minimal URL', function () {
     ]);
 
     expect($link->destination_url)->toBe('https://example.com');
+});
+
+test('resolveHash returns null when cache contains false (negative cache hit)', function () {
+    Cache::put('link:AbCdEf', false, 300);
+
+    expect(Link::resolveHash('AbCdEf'))->toBeNull();
+});
+
+test('resolveHash returns cached URL on cache hit', function () {
+    Cache::put('link:XyZaBc', 'https://example.com/cached', 300);
+
+    expect(Link::resolveHash('XyZaBc'))->toBe('https://example.com/cached');
+});
+
+test('findOrCreateByUrl returns existing link on duplicate fingerprint', function () {
+    User::factory()->system()->create();
+
+    $link1 = Link::findOrCreateByUrl('https://example.com/dup', null);
+    $link2 = Link::findOrCreateByUrl('https://example.com/dup', null);
+
+    expect($link1->id)->toBe($link2->id);
+    expect(Link::count())->toBe(1);
 });

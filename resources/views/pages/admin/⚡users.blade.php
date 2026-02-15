@@ -121,7 +121,7 @@ new #[Layout('layouts.app')] #[Title('Users Admin')] class extends Component {
                             @if ($user->id !== auth()->id() && $user->email !== config('anonto.system_user_email'))
                                 <flux:button
                                     wire:click="deleteUser({{ $user->id }})"
-                                    wire:confirm="{{ __('Are you sure you want to delete this user? Their links will remain but become unowned.') }}"
+                                    wire:confirm="{{ __('Are you sure you want to delete this user? Their links will become unowned.') }}"
                                     variant="danger"
                                     size="xs"
                                 >

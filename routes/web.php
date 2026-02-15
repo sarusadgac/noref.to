@@ -28,4 +28,5 @@ require __DIR__.'/settings.php';
 
 Route::get('{hash}', RedirectController::class)
     ->where('hash', '[A-Za-z0-9]{6}')
+    ->middleware('throttle:30,1')
     ->name('redirect');

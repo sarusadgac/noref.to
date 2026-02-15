@@ -30,7 +30,7 @@ new #[Layout('layouts.app')] #[Title('Domains Admin')] class extends Component {
         abort_unless(auth()->user()?->isAdmin(), 403);
 
         $this->validate([
-            'newHost' => ['required', 'string', 'max:255'],
+            'newHost' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]([a-z0-9\-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9\-]*[a-z0-9])?)*$/i'],
             'newReason' => ['nullable', 'string', 'max:255'],
         ]);
 

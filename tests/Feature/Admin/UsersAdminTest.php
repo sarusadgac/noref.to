@@ -71,6 +71,23 @@ test('admin can delete a user', function () {
     $this->assertDatabaseMissing('users', ['id' => $user->id]);
 });
 
+test('deleting a user nullifies their links instead of deleting them', function () {
+    $admin = User::factory()->admin()->create();
+    $user = User::factory()->create();
+    $link = Link::factory()->create(['created_by' => $user->id]);
+
+    Livewire::actingAs($admin)
+        ->test('pages::admin.users')
+        ->call('deleteUser', $user->id)
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseMissing('users', ['id' => $user->id]);
+    $this->assertDatabaseHas('links', [
+        'id' => $link->id,
+        'created_by' => null,
+    ]);
+});
+
 test('admin cannot delete themselves', function () {
     $admin = User::factory()->admin()->create();
 

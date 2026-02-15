@@ -5,6 +5,7 @@ use App\Models\Domain;
 use App\Models\Link;
 use App\Models\Report;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -13,13 +14,17 @@ use Livewire\Component;
 new #[Layout('layouts.app')] #[Title('Admin Dashboard')] class extends Component {
     public function with(): array
     {
-        return [
+        $stats = Cache::remember('admin:dashboard:stats', 60, fn () => [
             'totalLinks' => Link::count(),
             'totalUsers' => User::count(),
             'pendingReports' => Report::pending()->count(),
             'blockedDomains' => Domain::where('is_allowed', false)->count(),
             'linksToday' => Link::whereDate('created_at', today())->count(),
             'linksThisWeek' => Link::where('created_at', '>=', now()->startOfWeek())->count(),
+        ]);
+
+        return [
+            ...$stats,
             'topReportedDomains' => Report::query()
                 ->join('links', 'reports.link_id', '=', 'links.id')
                 ->where('reports.status', ReportStatus::Pending)
@@ -99,7 +104,7 @@ new #[Layout('layouts.app')] #[Title('Admin Dashboard')] class extends Component
                                 </a>
                             </td>
                             <td class="px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400">
-                                {{ $link->creator->name }}
+                                {{ $link->creator?->name ?? __('System') }}
                             </td>
                             <td class="px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                                 {{ $link->created_at->diffForHumans() }}

@@ -21,11 +21,25 @@ class Turnstile implements ValidationRule
             return;
         }
 
-        $response = Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
-            'secret' => $secretKey,
-            'response' => $value,
-            'remoteip' => request()->ip(),
-        ]);
+        try {
+            $response = Http::timeout(5)->asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+                'secret' => $secretKey,
+                'response' => $value,
+                'remoteip' => request()->ip(),
+            ]);
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            report($e);
+            $fail('Security verification is temporarily unavailable. Please try again shortly.');
+
+            return;
+        }
+
+        if ($response->failed()) {
+            report(new \RuntimeException('Turnstile API returned HTTP '.$response->status()));
+            $fail('Security verification is temporarily unavailable. Please try again shortly.');
+
+            return;
+        }
 
         if (! ($response->json('success') ?? false)) {
             $fail('Turnstile verification failed. Please try again.');

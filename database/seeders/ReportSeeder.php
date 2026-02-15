@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\ReportStatus;
+use App\Enums\UserRole;
 use App\Models\Link;
 use App\Models\Report;
 use App\Models\User;
@@ -16,7 +17,7 @@ class ReportSeeder extends Seeder
     public function run(): void
     {
         $systemUser = User::where('email', config('anonto.system_user_email'))->first();
-        $admin = User::where('role', 'admin')->first();
+        $admin = User::where('role', UserRole::Admin)->first();
 
         $suspiciousUrls = [
             'https://phishing-site.example.com/login',

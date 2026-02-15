@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Hash;
 
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\text;
@@ -31,11 +30,10 @@ class CreateAdminUser extends Command
         $user = User::create([
             'name' => $name,
             'email' => $email,
-            'password' => Hash::make($password),
+            'password' => $password,
         ]);
 
-        $user->role = UserRole::Admin;
-        $user->save();
+        $user->forceFill(['role' => UserRole::Admin])->save();
         $user->markEmailAsVerified();
 
         $this->info("Admin user [{$name}] created successfully.");

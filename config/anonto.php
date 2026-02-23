@@ -11,7 +11,7 @@ return [
     |
     */
 
-    'system_user_email' => env('ANONTO_SYSTEM_USER_EMAIL', 'system@anon.to'),
+    'system_user_email' => env('ANONTO_SYSTEM_USER_EMAIL', 'system@noref.to'),
 
     /*
     |--------------------------------------------------------------------------

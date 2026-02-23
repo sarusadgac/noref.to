@@ -9,7 +9,7 @@ new #[Layout('layouts.public')] #[Title('Integrate')] class extends Component {
 
 <div class="mx-auto max-w-2xl py-8 animate-fade-in">
     <h1 class="font-heading font-bold text-2xl text-zinc-900 dark:text-zinc-100 mb-2">{{ __('Integrate') }}</h1>
-    <p class="text-zinc-500 dark:text-zinc-400 text-sm mb-8">{{ __('Anonymize outbound links on your site using anon.to\'s direct redirect.') }}</p>
+    <p class="text-zinc-500 dark:text-zinc-400 text-sm mb-8">{{ __('Anonymize outbound links on your site using noref.to\'s direct redirect.') }}</p>
 
     <div class="space-y-6">
         <section>

@@ -15,7 +15,7 @@ new #[Layout('layouts.public')] #[Title('Privacy Policy')] class extends Compone
         {{-- Our Privacy Commitment --}}
         <section>
             <h2 class="font-heading font-bold text-lg text-zinc-900 dark:text-zinc-100 mb-2">{{ __('Our Privacy Commitment') }}</h2>
-            <p class="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{{ __('anon.to is built with privacy as its foundation. We do not track you, we do not run analytics, and we do not monetize your data. Our goal is simple: provide a fast, anonymous URL shortening and redirect service.') }}</p>
+            <p class="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{{ __('noref.to is built with privacy as its foundation. We do not track you, we do not run analytics, and we do not monetize your data. Our goal is simple: provide a fast, anonymous URL shortening and redirect service.') }}</p>
         </section>
 
         {{-- Data We Collect --}}
@@ -43,7 +43,7 @@ new #[Layout('layouts.public')] #[Title('Privacy Policy')] class extends Compone
         {{-- Referrer Stripping --}}
         <section>
             <h2 class="font-heading font-bold text-lg text-zinc-900 dark:text-zinc-100 mb-2">{{ __('Referrer Stripping') }}</h2>
-            <p class="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{{ __('All redirects through anon.to strip the referring page. The destination site will never know where you came from.') }}</p>
+            <p class="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{{ __('All redirects through noref.to strip the referring page. The destination site will never know where you came from.') }}</p>
         </section>
 
         {{-- Cookies --}}

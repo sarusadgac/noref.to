@@ -142,7 +142,7 @@
                     <span class="text-zinc-300 dark:text-zinc-700">&middot;</span>
                     <a href="{{ route('integrate') }}" class="font-mono-accent text-xs text-zinc-400 dark:text-zinc-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-150" wire:navigate>{{ __('Integrate') }}</a>
                     <span class="text-zinc-300 dark:text-zinc-700">&middot;</span>
-                    <a href="https://github.com/bhutanio/anon.to" target="_blank" rel="noopener noreferrer" class="font-mono-accent text-xs text-zinc-400 dark:text-zinc-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-150">{{ __('GitHub') }}</a>
+                    <a href="https://github.com/sarusadgac/noref.to" target="_blank" rel="noopener noreferrer" class="font-mono-accent text-xs text-zinc-400 dark:text-zinc-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-150">{{ __('GitHub') }}</a>
                 </nav>
                 <p class="font-mono-accent text-xs text-zinc-400 dark:text-zinc-600">{{ __('Privacy-first link shortening') }} &middot; {{ config('app.name') }}</p>
             </div>

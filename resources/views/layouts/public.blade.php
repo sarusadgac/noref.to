@@ -131,7 +131,7 @@
 
         <footer class="relative z-10 border-t border-zinc-200 dark:border-zinc-700/30 py-6 [grid-area:footer]">
             <div class="mx-auto max-w-7xl px-6 flex flex-col items-center gap-3">
-                <nav class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+                <nav aria-label="{{ __('Footer') }}" class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
                     <a href="{{ route('about') }}" class="font-mono-accent text-xs text-zinc-400 dark:text-zinc-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-150" wire:navigate>{{ __('About') }}</a>
                     <span class="text-zinc-300 dark:text-zinc-700">&middot;</span>
                     <a href="{{ route('privacy') }}" class="font-mono-accent text-xs text-zinc-400 dark:text-zinc-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-150" wire:navigate>{{ __('Privacy') }}</a>

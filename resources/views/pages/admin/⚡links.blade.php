@@ -140,7 +140,7 @@ new #[Layout('layouts.app')] #[Title('Links Admin')] class extends Component {
                             </a>
                         </td>
                         <td class="px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400">
-                            {{ $link->creator->name }}
+                            {{ $link->creator?->name ?? __('System') }}
                         </td>
                         <td class="px-4 py-3 text-sm text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                             {{ $link->created_at->diffForHumans() }}

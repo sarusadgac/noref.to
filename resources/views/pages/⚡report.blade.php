@@ -107,6 +107,10 @@ new #[Layout('layouts.public')] #[Title('Report a Link')] class extends Componen
                     <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Thank you for your report. An administrator will review it shortly.') }}</p>
                 </div>
             </div>
+
+            <flux:button variant="subtle" wire:click="$set('submitted', false)" class="mt-4 w-full">
+                {{ __('Submit Another Report') }}
+            </flux:button>
         </div>
     @else
         <div class="rounded-xl border border-zinc-200 dark:border-zinc-700/50 bg-white dark:bg-zinc-900/50 backdrop-blur-sm p-6">

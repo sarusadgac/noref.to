@@ -23,7 +23,7 @@ Laravel 12 · PHP 8.4 · Livewire 4 · Flux UI 2 · Tailwind CSS 4 · MySQL 8 ·
 ## Setup
 
 ```bash
-git clone https://github.com/aofhbk/anon.to.git noref.to
+git clone https://github.com/sarusadgac/noref.to.git noref.to
 cd noref.to
 composer install
 cp .env.example .env

@@ -26,3 +26,7 @@
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 @fluxAppearance
+
+<!-- Cloudflare Web Analytics -->
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "00424b8d2d6d42daa0956955b9e5bbe5"}'></script>
+<!-- End Cloudflare Web Analytics -->

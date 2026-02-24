@@ -21,6 +21,8 @@ new #[Layout('layouts.app')] #[Title('Admin Dashboard')] class extends Component
             'blockedDomains' => Domain::where('is_allowed', false)->count(),
             'linksToday' => Link::whereDate('created_at', today())->count(),
             'linksThisWeek' => Link::where('created_at', '>=', now()->startOfWeek())->count(),
+            'directRedirectsToday' => (int) Cache::get('direct_redirects:'.today()->toDateString(), 0),
+            'directRedirectsTotal' => (int) Cache::get('direct_redirects:total', 0),
         ]);
 
         return [
@@ -63,7 +65,7 @@ new #[Layout('layouts.app')] #[Title('Admin Dashboard')] class extends Component
     </div>
 
     {{-- Secondary Stats --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div class="rounded-lg border border-zinc-200 dark:border-zinc-700/50 bg-white dark:bg-zinc-900/50 p-4">
             <div class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ __('Links Today') }}</div>
             <div class="mt-1 text-2xl font-bold text-zinc-900 dark:text-zinc-100">{{ number_format($linksToday) }}</div>
@@ -71,6 +73,14 @@ new #[Layout('layouts.app')] #[Title('Admin Dashboard')] class extends Component
         <div class="rounded-lg border border-zinc-200 dark:border-zinc-700/50 bg-white dark:bg-zinc-900/50 p-4">
             <div class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ __('Links This Week') }}</div>
             <div class="mt-1 text-2xl font-bold text-zinc-900 dark:text-zinc-100">{{ number_format($linksThisWeek) }}</div>
+        </div>
+        <div class="rounded-lg border border-zinc-200 dark:border-zinc-700/50 bg-white dark:bg-zinc-900/50 p-4">
+            <div class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ __('Direct Redirects Today') }}</div>
+            <div class="mt-1 text-2xl font-bold text-emerald-600 dark:text-emerald-400">{{ number_format($directRedirectsToday) }}</div>
+        </div>
+        <div class="rounded-lg border border-zinc-200 dark:border-zinc-700/50 bg-white dark:bg-zinc-900/50 p-4">
+            <div class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ __('Direct Redirects Total') }}</div>
+            <div class="mt-1 text-2xl font-bold text-emerald-600 dark:text-emerald-400">{{ number_format($directRedirectsTotal) }}</div>
         </div>
     </div>
 

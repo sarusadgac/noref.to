@@ -21,12 +21,12 @@ new #[Layout('layouts.app')] #[Title('Admin Dashboard')] class extends Component
             'blockedDomains' => Domain::where('is_allowed', false)->count(),
             'linksToday' => Link::whereDate('created_at', today())->count(),
             'linksThisWeek' => Link::where('created_at', '>=', now()->startOfWeek())->count(),
-            'directRedirectsToday' => (int) Cache::get('direct_redirects:'.today()->toDateString(), 0),
-            'directRedirectsTotal' => (int) Cache::get('direct_redirects:total', 0),
         ]);
 
         return [
             ...$stats,
+            'directRedirectsToday' => (int) Cache::get('direct_redirects:'.today()->toDateString(), 0),
+            'directRedirectsTotal' => (int) Cache::get('direct_redirects:total', 0),
             'topReportedDomains' => Report::query()
                 ->join('links', 'reports.link_id', '=', 'links.id')
                 ->where('reports.status', ReportStatus::Pending)

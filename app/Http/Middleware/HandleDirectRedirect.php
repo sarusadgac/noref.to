@@ -21,8 +21,12 @@ class HandleDirectRedirect
             $queryString = rawurldecode($request->server('QUERY_STRING', ''));
 
             if ($queryString && filter_var($queryString, FILTER_VALIDATE_URL) && preg_match('#^https?://#i', $queryString)) {
-                Cache::increment('direct_redirects:total');
-                Cache::increment('direct_redirects:'.now()->toDateString());
+                $total = (int) Cache::get('direct_redirects:total', 0);
+                Cache::put('direct_redirects:total', $total + 1);
+
+                $dailyKey = 'direct_redirects:'.now()->toDateString();
+                $daily = (int) Cache::get($dailyKey, 0);
+                Cache::put($dailyKey, $daily + 1, now()->endOfDay());
 
                 $host = parse_url($queryString, PHP_URL_HOST);
                 $domainStatus = $host ? Domain::isAllowed($host) : null;
